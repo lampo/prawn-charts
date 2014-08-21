@@ -14,12 +14,12 @@ Prawn::Document.generate('chart.pdf') do
   end
 
   opts = {
-    title: 'Bar',
-    at: [bounds.left + 20, bounds.top],
-    width: 500,
-    height: 200,
-    x: {title: 'X Axis'},
-    y: {title: 'Y Axis'},
+    title:   'Bar',
+    at:      [bounds.left + 20, bounds.top],
+    width:   500,
+    height:  200,
+    x: {title: 'X Axis', display: true},
+    y: {title: 'Y Axis', display: true},
     key_formatter:    lambda{|key| (Date.today >> key).strftime('%b %Y')},
     value_formatter:  lambda{|value| value.to_s},
     series: [
@@ -62,9 +62,9 @@ Prawn::Document.generate('chart.pdf') do
 
   line_opts = opts.merge({
     title: nil,
-    y: nil,
-    x: nil,
-    y1: {title: 'Y1 Axis'},
+    x: {title: 'X Axis', display: false},
+    y: {title: 'Y Axis', display: false},
+    y1: {title: 'Y1 Axis', display: true},
     series: [
       {
         name:             'Red',
@@ -78,7 +78,8 @@ Prawn::Document.generate('chart.pdf') do
 
   bar_opts = opts.merge({
     title: 'Combo Chart',
-    y1: nil,
+    x: {title: 'X Axis', display: true},
+    y: {title: 'Y Axis', display: true},
     series: [
       {
         name:             'BLUE',

@@ -5,11 +5,7 @@ module Prawn
     # chart will require.  It also will call the drawing functions for each of
     # the types of charts.
     class Base
-      attr_reader :pdf
-      attr_accessor :title, :legend
-      attr_accessor :padding, :x, :y, :y1, :series
-      attr_accessor :at, :width, :height
-      attr_accessor :key_formatter, :value_formatter
+      attr_reader :pdf, :config
 
       extend Forwardable
 
@@ -21,22 +17,38 @@ module Prawn
       def_delegators :@pdf, :rectangle, :stroke_color, :line, :stroke
       def_delegators :@pdf, :fill_ellipse, :curve
 
+      #
+      # @param pdf [Prawn::Document] and instance of the prawn document
+      # @param opts [Hash]
+      # @option opts :title [String]
+      # @option opts :at [Array<x,y>]
+      # @option opts :width [Fixnum] (500)
+      # @option opts :height [Fixnum] (200)
+      # @option opts :x  [Hash] ({title: 'X Axis', display: false })
+      # @option opts :y  [Hash] ({title: 'Y Axis', display: false})
+      # @option opts :y1 [Hash] ({title: 'Y1 Axis', display: false})
+      # @option opts :key_formatter   [Proc] lambda{|key| key.to_s },
+      # @option opts :value_formatter [Proc] lambda{|value| value.to_s},
+      # @option opts :series [Array<Hash>] [
+      #     {
+      #       name:             'Red',
+      #       color:            'FF00',
+      #       values:           [{ key: , value: }]
+      #     },
+      #     {
+      #       name:             'Blue',
+      #       color:            '1F1F',
+      #       values:           [{ key: , value: }]
+      #     }]
+      # }
       def initialize pdf, opts = {}
 
-        @pdf             = pdf
-        opts             = defaults.merge(opts)
-        @title           = opts[:title]
-        @legend          = opts[:legend]
-        @padding         = opts[:padding]
-        @x               = opts[:x]
-        @y               = opts[:y]
-        @y1              = opts[:y1]
-        @at              = opts[:at]
-        @width           = opts[:width]
-        @height          = opts[:height]
-        @series          = opts[:series]
-        @key_formatter   = opts[:key_formatter]
-        @value_formatter = opts[:value_formatter]
+        @pdf    = pdf
+        opts    = defaults.merge(opts)
+        @config = OpenStruct.new defaults.merge(opts)
+        opts.keys.each do |key|
+          define_singleton_method key.to_s, &@config.method(key)
+        end
       end
 
       def defaults
@@ -47,11 +59,14 @@ module Prawn
             right:   50,
             top:     50,
           },
-          at:       [0,0],
-          width:    500,
-          height:   200,
-          key_formatter: lambda{ |key| key.to_s },
-          value_formatter: lambda{ |value| value.to_s }
+          x:  { display: false },
+          y:  { display: false },
+          y1: { display: false },
+          at:               [0,0],
+          width:            500,
+          height:           200,
+          key_formatter:    lambda{ |key| key.to_s },
+          value_formatter:  lambda{ |value| value.to_s }
         }
       end
 
@@ -61,14 +76,14 @@ module Prawn
           fill_color '0000'
 
           draw_title
-          draw_x_axis_label  if x
-          draw_y_axis_label  if y
-          draw_y1_axis_label if y1
+          draw_x_axis_label  if x[:display]
+          draw_y_axis_label  if y[:display]
+          draw_y1_axis_label if y1[:display]
 
           bounding_box(chart_at, width: chart_width, height: chart_height) do
-            draw_x_axis  if x
-            draw_y_axis  if y
-            draw_y1_axis if y1
+            draw_x_axis  if x[:display]
+            draw_y_axis  if y[:display]
+            draw_y1_axis if y1[:display]
             #stroke_axis( color: 'FF00', step_length: 50 )
             plot_values
           end

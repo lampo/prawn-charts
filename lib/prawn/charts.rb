@@ -1,5 +1,6 @@
 require "prawn/charts/version"
-#require File.dirname(__FILE__) + '/charts/errors'
+require "ostruct"
+require File.dirname(__FILE__) + '/charts/errors'
 require File.dirname(__FILE__) + '/charts/base'
 require File.dirname(__FILE__) + '/charts/bar'
 require File.dirname(__FILE__) + '/charts/stacked_bar'
@@ -31,12 +32,12 @@ module Prawn
     # @option opts [Proc] :key_formatter formatter for the X values
     # @option opts [Proc] :value_formatter formatter for the Y values
     #
-    # @yieldparam [Prawn::Charts::Bar]
+    # @yieldparam [Prawn::Charts::Bar#config]
     #
     # @return [Prawn::Charts::Bar]
     def bar_chart opts={}, &block
       chart = Prawn::Charts::Bar.new(self, opts)
-      yield chart if block_given?
+      yield chart.config if block_given?
       chart.draw
     end
 
@@ -59,12 +60,12 @@ module Prawn
     # @option opts [Proc] :key_formatter formatter for the X values
     # @option opts [Proc] :value_formatter formatter for the Y values
     #
-    # @yieldparam [Prawn::Charts::StackedBar]
+    # @yieldparam [Prawn::Charts::StackedBar#config]
     #
     # @return [Prawn::Charts::StackedBar]
     def stacked_bar_chart opts={}, &block
       chart = Prawn::Charts::StackedBar.new(self, opts)
-      yield chart if block_given?
+      yield chart.config if block_given?
       chart.draw
     end
 
@@ -87,12 +88,12 @@ module Prawn
     # @option opts [Proc] :key_formatter formatter for the X values
     # @option opts [Proc] :value_formatter formatter for the Y values
     #
-    # @yieldparam [Prawn::Charts::Line]
+    # @yieldparam [Prawn::Charts::Line#config]
     #
     # @return [Prawn::Charts::Line]
     def line_chart opts={}, &block
       chart = Prawn::Charts::Line.new(self, opts)
-      yield chart if block_given?
+      yield chart.config if block_given?
       chart.draw
     end
 
@@ -121,7 +122,7 @@ module Prawn
     # @return [Prawn::Charts::Combo]
     def combo_chart opts={}, &block
       chart = Prawn::Charts::Combo.new(self, opts)
-      yield chart if block_given?
+      #yield chart if block_given?
       chart.draw
     end
   end
