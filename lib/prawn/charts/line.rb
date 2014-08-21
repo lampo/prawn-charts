@@ -1,7 +1,7 @@
 module Prawn
   module Charts
 
-    class Line < StackedBar
+    class Line < Bar
 
       def plot_values
         return if series.nil?
@@ -31,12 +31,30 @@ module Prawn
         end
       end
 
+      def x_points
+        points = []
+        stacked_bar_values.each_with_index do |stack,index|
+          points << first_x_point(index) + (bar_width / 2)
+        end
+        points
+      end
+
+      def percentage
+        false
+      end
+
+
       def first_x
         (bar_width / 2) + bar_space
       end
 
       def addition_x
         bar_width + bar_space
+      end
+
+
+      def series_length
+        series.map { |v| v[:values].length }.max
       end
     end
   end

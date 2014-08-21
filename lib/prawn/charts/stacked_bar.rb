@@ -19,6 +19,10 @@ module Prawn
         end
       end
 
+      def percentage
+        true
+      end
+
       def x_points
         points = []
         stacked_bar_values.each_with_index do |stack,index|
@@ -31,31 +35,15 @@ module Prawn
         series.map { |v| v[:values].length }.max
       end
 
-      def stacked_bar_values
-        keys.map do |key|
-          items = for_key(key)
-          {
-            key: key,
-            values: items,
-            total: items.inject(0){ |s,v| s + v[:value] }
-          }
-        end
+      def max_value
+        100
+      end
+
+      def min_value
+        0
       end
 
 
-      def keys
-        @keys ||= series.map{ |v| v[:values].map{|k| k[:key] }}.flatten.uniq
-      end
-
-      def for_key key
-        series.map do |v|
-          {
-            name: v[:name],
-            color: v[:color],
-            value: v[:values].detect{|k| k[:key] == key }[:value]
-          }
-        end
-      end
     end
   end
 end

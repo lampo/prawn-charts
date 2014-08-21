@@ -7,7 +7,7 @@ module Prawn
       extend Forwardable
 
       def_delegators :@pdf, :bounding_box, :stroke_bounds, :text
-      def_delegators :@pdf, :height_of, :width_of
+      def_delegators :@pdf, :height_of, :width_of, :fill_color
       def_delegators :@pdf, :draw_text, :bounds, :rotate
 
       def initialize pdf, opts
@@ -21,6 +21,7 @@ module Prawn
       end
 
       def draw
+        fill_color '0000'
         bounding_box at, width: width, height: height do
           index = 0
           slice = if label_count_width < labels.count

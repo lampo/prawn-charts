@@ -20,7 +20,6 @@ Prawn::Document.generate('chart.pdf') do
     height: 200,
     x: {title: 'X Axis'},
     y: {title: 'Y Axis'},
-    y1: {title: 'Y1 Axis'},
     key_formatter:    lambda{|key| (Date.today >> key).strftime('%b %Y')},
     value_formatter:  lambda{|value| value.to_s},
     series: [
@@ -62,6 +61,10 @@ Prawn::Document.generate('chart.pdf') do
   start_new_page
 
   line_opts = opts.merge({
+    title: nil,
+    y: nil,
+    x: nil,
+    y1: {title: 'Y1 Axis'},
     series: [
       {
         name:             'Red',
@@ -75,6 +78,7 @@ Prawn::Document.generate('chart.pdf') do
 
   bar_opts = opts.merge({
     title: 'Combo Chart',
+    y1: nil,
     series: [
       {
         name:             'BLUE',

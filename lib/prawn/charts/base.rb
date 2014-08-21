@@ -58,15 +58,16 @@ module Prawn
       def draw
         bounding_box at, width: width, height: height do
           stroke_bounds
+          fill_color '0000'
 
           draw_title
-          draw_x_axis_label if x
-          draw_y_axis_label if y
+          draw_x_axis_label  if x
+          draw_y_axis_label  if y
           draw_y1_axis_label if y1
 
           bounding_box(chart_at, width: chart_width, height: chart_height) do
-            draw_x_axis if x
-            draw_y_axis if y
+            draw_x_axis  if x
+            draw_y_axis  if y
             draw_y1_axis if y1
             #stroke_axis( color: 'FF00', step_length: 50 )
             plot_values
@@ -153,7 +154,8 @@ module Prawn
           width:      txt,
           height:     bounds.height,
           points:     [min_value, max_value],
-          formatter:  value_formatter
+          formatter:  value_formatter,
+          percentage: percentage
         }
 
         Prawn::Charts::YAxis.new(pdf, opts).draw
@@ -188,8 +190,11 @@ module Prawn
         @values ||= series.map{ |bar| bar[:values].map{|single| single[:value] }}.flatten
       end
 
+      def keys
+        @keys ||= series.map{ |v| v[:values].map{|k| k[:key] }}.flatten.uniq
+      end
+
       def max_value
-        #n = values.max + delta_value * 0.1
         n = values.max
         exp = 10 ** (Math.log10(n).floor - 1)
         n + ( exp  - n % exp)  + exp
@@ -208,6 +213,33 @@ module Prawn
       def series_height
         max_value - min_value
       end
+
+      def percentage
+        false
+      end
+
+      def stacked_bar_values
+        keys.map do |key|
+          items = for_key(key)
+          {
+            key: key,
+            values: items,
+            total: items.inject(0){ |s,v| s + v[:value] }
+          }
+        end
+      end
+
+
+      def for_key key
+        series.map do |v|
+          {
+            name: v[:name],
+            color: v[:color],
+            value: v[:values].detect{|k| k[:key] == key }[:value]
+          }
+        end
+      end
+
     end
   end
 end
