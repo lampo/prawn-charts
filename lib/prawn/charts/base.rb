@@ -46,7 +46,7 @@ module Prawn
         @pdf    = pdf
         opts    = defaults.merge(opts)
         @config = OpenStruct.new defaults.merge(opts)
-        opts.keys.each do |key|
+        @config.each_pair.each do |key, val|
           define_singleton_method key.to_s, &@config.method(key)
         end
 
