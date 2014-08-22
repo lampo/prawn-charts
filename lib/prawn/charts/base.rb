@@ -226,8 +226,7 @@ module Prawn
       end
 
       def min_value
-        #n = (values.min - delta_value * 0.1).to_i
-        n = values.min
+        n = (values.min - delta_value * 0.1).to_i
         n - (n % exp(n)) - exp(n)
       end
 
