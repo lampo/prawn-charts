@@ -6,10 +6,11 @@ require 'prawn/charts/version'
 Gem::Specification.new do |spec|
   spec.name          = "prawn-charts"
   spec.version       = Prawn::Charts::VERSION
-  spec.authors       = ["Zac"]
+  spec.authors       = ["Cajun"]
   spec.email         = ["zac@kleinpeter.org"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
+  spec.description   = %q{WARNING: Alpha Software.  Charting Lib for Prawn.
+  Supports bar, line, and combo charts.  }
+  spec.summary       = %q{Prawn Charting Lib}
   spec.homepage      = ""
   spec.license       = "MIT"
 

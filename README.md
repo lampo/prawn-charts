@@ -1,4 +1,5 @@
 # Prawn::Charts
+[![Gem Version](https://badge.fury.io/rb/prawn-charts.svg)](http://badge.fury.io/rb/prawn-charts)
 
 TODO: Write a gem description
 
