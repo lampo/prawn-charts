@@ -62,7 +62,7 @@ module Prawn
           },
           at:      [bounds.left, bounds.top],
           width:   bounds.width,
-          height:  bounds.heigh,
+          height:  bounds.height,
           x:  { display: false },
           y:  { display: false },
           y1: { display: false },
@@ -212,16 +212,23 @@ module Prawn
         @keys ||= series.map{ |v| v[:values].map{|k| k[:key] }}.flatten.uniq
       end
 
+      def exp n
+        if n <= 0
+          1
+        else
+          10 ** (Math.log10(n).floor - 1)
+        end
+      end
+
       def max_value
         n = values.max
-        exp = 10 ** (Math.log10(n).floor - 1)
-        n + ( exp  - n % exp)  + exp
+        n + ( exp(n)  - n % exp(n))  + exp(n)
       end
 
       def min_value
-        n = (values.min - delta_value * 0.1).to_i
-        exp = 10 ** (Math.log10(n).floor - 1)
-        n - (n % exp)
+        #n = (values.min - delta_value * 0.1).to_i
+        n = values.min
+        n - (n % exp(n)) - exp(n)
       end
 
       def delta_value
