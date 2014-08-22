@@ -10,7 +10,7 @@ module Prawn
       extend Forwardable
 
       def_delegators :@pdf, :bounding_box, :bounds
-      def_delegators :@pdf, :draw_text, :pad, :text
+      def_delegators :@pdf, :draw_text, :pad, :text, :text_box
       def_delegators :@pdf, :stroke_axis, :rotate, :stroke_bounds
       def_delegators :@pdf, :height_of, :width_of
       def_delegators :@pdf, :fill, :fill_color
@@ -71,27 +71,30 @@ module Prawn
         }
       end
 
+      def with_color color = '000000'
+        original_color = @pdf.fill_color
+        yield
+        @pdf.fill_color = original_color
+      end
+
       def draw
-        fill_color '0000'
-        bounding_box at, width: width, height: height do
-          stroke_bounds
+        with_color do
+          bounding_box at, width: width, height: height do
+            stroke_bounds
 
-          draw_title
-          draw_x_axis_label  if x[:display]
-          draw_y_axis_label  if y[:display]
-          draw_y1_axis_label if y1[:display]
+            draw_title
 
-          bounding_box(chart_at, width: chart_width, height: chart_height) do
-            draw_x_axis  if x[:display]
-            draw_y_axis  if y[:display]
-            draw_y1_axis if y1[:display]
-            #stroke_axis( color: 'FF00', step_length: 50 )
-            plot_values
+            bounding_box(chart_at, width: chart_width, height: chart_height) do
+
+              draw_x_axis  if x[:display]
+              draw_y_axis  if y[:display]
+              draw_y1_axis if y1[:display]
+
+              plot_values
+            end
+
           end
-
         end
-
-        fill_color '0000'
       end
 
       def padding_top_bottom
@@ -121,30 +124,6 @@ module Prawn
         end
       end
 
-      def draw_y_axis_label
-        w = width_of(y[:title]) / 2
-        rotate 90, origin: [bounds.left + w , (bounds.height / 2 )] do
-          mid = bounds.height / 2
-          draw_text y[:title], at: [0, mid]
-        end
-      end
-
-      def draw_y1_axis_label
-        w = width_of(y1[:title]) / 2
-        rotate 270, origin: [bounds.right - w, (bounds.height / 2 )] do
-          mid = bounds.height / 2
-          draw_text y1[:title], at: [bounds.right - w, mid]
-        end
-      end
-
-      def draw_x_axis_label
-        opts ={ width: bounds.width, height: height_of(x[:title]) }
-        bounding_box( [bounds.left, bounds.bottom + height_of(x[:title])], opts ) do
-          text x[:title], align: :center
-        end
-      end
-
-
       def draw_x_axis
         txt = series.map do |s|
           s[:values].map{ |v| height_of(key_formatter.call(v[:key]))}.max
@@ -160,6 +139,11 @@ module Prawn
         }
 
         Prawn::Charts::XAxis.new(pdf, opts).draw
+
+        opts ={ width: bounds.width, height: height_of(x[:title]) }
+        bounding_box( [bounds.left, (-txt - height_of(x[:title]) / 2)], opts ) do
+          text x[:title], align: :center
+        end
       end
 
       def draw_y_axis
@@ -178,6 +162,11 @@ module Prawn
 
         Prawn::Charts::YAxis.new(pdf, opts).draw
 
+        mid = bounds.height / 2
+        rotate 90, origin: [bounds.left, mid ] do
+          draw_text y[:title], { at: [bounds.left - width_of(y[:title]) / 2 , bounds.height - height_of(y[:title])] }
+        end
+
       end
 
       def draw_y1_axis
@@ -194,6 +183,11 @@ module Prawn
         }
 
         Prawn::Charts::YAxis.new(pdf, opts).draw
+
+        mid = bounds.height / 2
+        rotate 270, origin: [bounds.right, mid ] do
+          draw_text y1[:title], { at: [bounds.right - width_of(y1[:title]) / 2 , bounds.height - height_of(y1[:title])] }
+        end
 
       end
 
@@ -212,17 +206,21 @@ module Prawn
         @keys ||= series.map{ |v| v[:values].map{|k| k[:key] }}.flatten.uniq
       end
 
-      def exp n
+      def exp n, offset = 0
         if n <= 0
           1
         else
-          10 ** (Math.log10(n).floor - 1)
+          10 ** (Math.log10(n).floor) - offset
         end
       end
 
       def max_value
-        n = values.max
-        n + ( exp(n)  - n % exp(n))  + exp(n)
+        increment = exp(min_value) * 2
+        mvalue = values.max
+
+        (min_value..(mvalue + increment )).detect do |sample|
+          sample >= mvalue + increment
+        end
       end
 
       def min_value

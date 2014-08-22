@@ -21,7 +21,6 @@ module Prawn
       end
 
       def draw
-        fill_color '0000'
         bounding_box at, width: width, height: height do
           index = 0
           slice = if label_count_width < labels.count
@@ -33,10 +32,8 @@ module Prawn
           labels.each_slice(slice) do |items|
             offset = width_of(items.first) / 2
             origin = [(@points[index] - offset).to_i,0]
-            point = [origin.first,-20]
-            rotate 20, origin: origin do
-              draw_text items.first, at: point
-            end
+            point = [origin.first,0]
+            draw_text items.first, at: point
             index += slice
           end
         end

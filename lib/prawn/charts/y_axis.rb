@@ -8,27 +8,26 @@ module Prawn
 
       def_delegators :@pdf, :bounding_box, :stroke_bounds, :text
       def_delegators :@pdf, :height_of, :width_of, :fill_color
-      def_delegators :@pdf, :draw_text, :bounds
+      def_delegators :@pdf, :text_box, :bounds
 
       def initialize pdf, opts
-        @pdf       = pdf
-        @at        = opts[:at]
-        @width     = opts[:width]
-        @height    = opts[:height]
-        @points    = opts[:points]
-        @formatter = opts[:formatter]
+        @pdf        = pdf
+        @at         = opts[:at]
+        @width      = opts[:width]
+        @height     = opts[:height]
+        @points     = opts[:points]
+        @formatter  = opts[:formatter]
         @percentage = opts[:percentage]
       end
 
       def draw
-        fill_color '0000'
         bounding_box at, width: width, height: height do
           last_point = nil
           list.each do |item|
             percent = ((item - points.min).to_f / axis_height.to_f)
             y_point = (percent * bounds.height) - (text_height / 3).to_i
             if y_point > (last_point || y_point - 1)
-              draw_text formatter.call(item), at: [0, y_point]
+              text_box formatter.call(item), at: [0, y_point], align: :right
               last_point = y_point + text_height
             end
           end
@@ -60,12 +59,8 @@ module Prawn
 
       def exp
         n = points.min
-        if points.min == points.max
-          n = points.max - 1
-        end
-
         if n <= 0
-          1
+          10
         else
           10 ** (Math.log10(n).floor)
         end
@@ -76,11 +71,7 @@ module Prawn
       end
 
       def percentage_list
-        percentage_list = []
-        (0 .. 100).each_slice(10) do |n|
-          percentage_list.push n.first
-        end
-        percentage_list
+        [0, 25, 50, 75, 100]
       end
 
     end

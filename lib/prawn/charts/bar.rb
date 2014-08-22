@@ -18,8 +18,6 @@ module Prawn
             fill do
               height = value_height(h[:value])
               rectangle [point_x,height], bar_width, height
-              #draw_text height.to_i, at: [point_x,height]
-              #draw_text h[:value], at: [point_x,height]
             end
             point_x += additional_points
           end
