@@ -52,11 +52,23 @@ module Prawn
         return percentage_list if percentage?
         return @range if @range
         @range =[]
-        exp = Math.log10(points.min).floor - 1
-        (points.min.to_i..points.max.to_i).each_slice( 10 ** exp) do |n|
+        (points.min.to_i..points.max.to_i).each_slice(exp) do |n|
           @range.push n.first
         end
         @range
+      end
+
+      def exp
+        n = points.min
+        if points.min == points.max
+          n = points.max - 1
+        end
+
+        if n <= 0
+          1
+        else
+          10 ** (Math.log10(n).floor)
+        end
       end
 
       def percentage?
