@@ -12,7 +12,6 @@ require File.dirname(__FILE__) + '/charts/x_axis'
 require File.dirname(__FILE__) + '/charts/y_axis'
 
 I18n.load_path << File.dirname(__FILE__) + '/../config/locales/en.yml'
-I18n.enforce_available_locales = false
 module Prawn
   class Document
 

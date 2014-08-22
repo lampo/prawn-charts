@@ -50,7 +50,6 @@ module Prawn
           define_singleton_method key.to_s, &@config.method(key)
         end
 
-        raise Errors::NoChartData.new if @config.series.nil?
       end
 
       def defaults
