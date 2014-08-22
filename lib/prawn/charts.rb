@@ -12,6 +12,7 @@ require File.dirname(__FILE__) + '/charts/x_axis'
 require File.dirname(__FILE__) + '/charts/y_axis'
 
 I18n.load_path << File.dirname(__FILE__) + '/../config/locales/en.yml'
+
 module Prawn
   class Document
 

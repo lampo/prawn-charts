@@ -60,21 +60,21 @@ module Prawn
             right:   50,
             top:     50,
           },
+          at:      [bounds.left, bounds.top],
+          width:   bounds.width,
+          height:  bounds.heigh,
           x:  { display: false },
           y:  { display: false },
           y1: { display: false },
-          at:               [0,0],
-          width:            500,
-          height:           200,
           key_formatter:    lambda{ |key| key.to_s },
           value_formatter:  lambda{ |value| value.to_s }
         }
       end
 
       def draw
+        fill_color '0000'
         bounding_box at, width: width, height: height do
           stroke_bounds
-          fill_color '0000'
 
           draw_title
           draw_x_axis_label  if x[:display]
@@ -90,6 +90,8 @@ module Prawn
           end
 
         end
+
+        fill_color '0000'
       end
 
       def padding_top_bottom
