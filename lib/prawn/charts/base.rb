@@ -153,7 +153,7 @@ module Prawn
           s[:values].map{ |v| width_of(value_formatter.call(v[:value]))}.max
         end.max
 
-        txt = width_of('100') if percentage
+        txt = width_of('100%') if percentage
 
         opts = {
           at:         [-txt, bounds.height],
