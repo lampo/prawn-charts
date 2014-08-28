@@ -72,9 +72,11 @@ module Prawn
       end
 
       def with_color color = '000000'
-        original_color = @pdf.fill_color
+        original_fill_color   = @pdf.fill_color
+        original_stroke_color = @pdf.stroke_color
         yield
-        @pdf.fill_color = original_color
+        @pdf.fill_color   = original_fill_color
+        @pdf.stroke_color = original_stroke_color
       end
 
       def draw
@@ -182,12 +184,6 @@ module Prawn
 
         Prawn::Charts::YAxis.new(pdf, opts).draw
 
-        #mid = bounds.height / 2
-        #rotate 270, origin: [bounds.right, mid ] do
-          #draw_text y1[:title], { at: [bounds.right - width_of(y1[:title]) / 2 , bounds.height - height_of(y1[:title])] }
-        #end
-
-        stroke_bounds
         mid = bounds.height - width_of(y1[:title])
         draw_text y[:title], { at: [bounds.right + txt + 1, mid ], rotate: 270 }
 

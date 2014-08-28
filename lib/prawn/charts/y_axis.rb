@@ -25,7 +25,7 @@ module Prawn
           last_point = nil
           list.each do |item|
             percent = ((item - points.min).to_f / axis_height.to_f)
-            y_point = (percent * bounds.height) - (text_height / 3).to_i
+            y_point = (percent * bounds.height) - (text_height).to_i
             if y_point > (last_point || y_point - 1)
               text_box formatter.call(item), at: [0, y_point], align: :right
               last_point = y_point + text_height
