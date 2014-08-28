@@ -58,12 +58,8 @@ module Prawn
       end
 
       def exp
-        n = points.min
-        if n <= 0
-          10
-        else
-          10 ** (Math.log10(n).floor)
-        end
+        n = points.min <= 0 ? 10 : points.min
+        10 ** (Math.log10(n).floor)
       end
 
       def percentage?
