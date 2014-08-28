@@ -220,7 +220,7 @@ module Prawn
 
         (min_value..(mvalue + increment )).detect do |sample|
           sample >= mvalue + increment
-        end
+        end || values.max
       end
 
       def min_value
