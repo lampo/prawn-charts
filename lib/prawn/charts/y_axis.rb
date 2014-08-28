@@ -51,7 +51,7 @@ module Prawn
         return percentage_list if percentage?
         return @range if @range
         @range =[]
-        ((points.min || 0).to_i..points.max.to_i).each_slice(exp) do |n|
+        (points.min.to_i..points.max.to_i).each_slice(exp) do |n|
           @range.push n.first
         end
         @range

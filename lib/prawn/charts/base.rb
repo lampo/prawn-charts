@@ -87,8 +87,8 @@ module Prawn
             bounding_box(chart_at, width: chart_width, height: chart_height) do
 
               draw_x_axis  if x[:display]
-              draw_y_axis  if y[:display]
-              draw_y1_axis if y1[:display]
+              #draw_y_axis  if y[:display]
+              #draw_y1_axis if y1[:display]
 
               plot_values
             end
