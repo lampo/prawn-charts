@@ -1,17 +1,14 @@
 require "prawn/charts/version"
 require "ostruct"
-require 'i18n'
 require File.dirname(__FILE__) + '/charts/error'
-require File.dirname(__FILE__) + '/charts/error/no_series'
 require File.dirname(__FILE__) + '/charts/base'
 require File.dirname(__FILE__) + '/charts/bar'
 require File.dirname(__FILE__) + '/charts/stacked_bar'
 require File.dirname(__FILE__) + '/charts/line'
 require File.dirname(__FILE__) + '/charts/combo'
+require File.dirname(__FILE__) + '/charts/legend'
 require File.dirname(__FILE__) + '/charts/x_axis'
 require File.dirname(__FILE__) + '/charts/y_axis'
-
-I18n.load_path << File.dirname(__FILE__) + '/../config/locales/en.yml'
 
 module Prawn
   class Document

@@ -58,7 +58,7 @@ module Prawn
             bottom:  50,
             left:    50,
             right:   50,
-            top:     50,
+            top:     25,
           },
           at:      [bounds.left, bounds.top],
           width:   bounds.width,
@@ -82,9 +82,9 @@ module Prawn
       def draw
         with_color do
           bounding_box at, width: width, height: height do
-            stroke_bounds
 
             draw_title
+            draw_legend
 
             bounding_box(chart_at, width: chart_width, height: chart_height) do
 
@@ -124,6 +124,19 @@ module Prawn
         bounding_box( [bounds.left, bounds.top - height_of(title.to_s) / 2], opts ) do
           text title, align: :center
         end
+      end
+
+      def draw_legend
+        point = [chart_at.first, bounds.top - height_of(series.first[:name].to_s)]
+        opts = {
+          at: point,
+          width:chart_width,
+          height: ( point.last - chart_at.last ),
+          series: series,
+          left: y1[:display]
+
+        }
+        Prawn::Charts::Legend.new(pdf, opts).draw
       end
 
       def draw_x_axis

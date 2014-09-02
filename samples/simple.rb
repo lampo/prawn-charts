@@ -37,7 +37,7 @@ Prawn::Document.generate('chart.pdf') do
       },
       {
         name:             'Blue',
-        color:            '1F1F',
+        color:            '1BB2',
         value_formatter:  lambda{|value| value.to_s},
         values:           blue
       }
@@ -82,8 +82,8 @@ Prawn::Document.generate('chart.pdf') do
     y: {title: 'Y Axis', display: true},
     series: [
       {
-        name:             'BLUE',
-        color:            '12AA',
+        name:             'Blue',
+        color:            'A33A',
         key_formatter:    lambda{|key| key.to_s},
         value_formatter:  lambda{|value| value.to_s},
         values:           blue
