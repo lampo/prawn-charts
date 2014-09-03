@@ -85,7 +85,6 @@ module Prawn
 
           last_width += w
         end
-        puts @corrinates.inspect
 
         @corrinates
       end
