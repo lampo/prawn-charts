@@ -20,21 +20,31 @@ module Prawn
         @formatter = opts[:formatter]
       end
 
-      def draw
-        bounding_box at, width: width, height: height do
-          index = 0
-          slice = if label_count_width < labels.count
-                    (labels.count.to_f / label_count_width.to_f).ceil
-                  else
-                    1
-                  end
 
-          labels.each_slice(slice) do |items|
-            offset = width_of(items.first) / 2
-            origin = [(@points[index] - offset).to_i,0]
-            point = [origin.first,0]
-            draw_text items.first, at: point
-            index += slice
+      def with_font
+        original_font = @pdf.font_size
+        @pdf.font_size -= 2
+        yield
+        @pdf.font_size = original_font
+      end
+
+      def draw
+        with_font do
+          bounding_box at, width: width, height: height do
+            index = 0
+            slice = if label_count_width < labels.count
+                      (labels.count.to_f / label_count_width.to_f).ceil
+                    else
+                      1
+                    end
+
+            labels.each_slice(slice) do |items|
+              offset = width_of(items.first) / 2
+              origin = [(@points[index] - offset).to_i,0]
+              point = [origin.first,0]
+              draw_text items.first, at: point
+              index += slice
+            end
           end
         end
       end

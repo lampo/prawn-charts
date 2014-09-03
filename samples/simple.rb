@@ -41,7 +41,7 @@ Prawn::Document.generate('chart.pdf') do
         value_formatter:  lambda{|value| value.to_s},
         values:           blue
       }
-    ]
+    ] * 4
   }
 
   bar_chart(opts) do |config|

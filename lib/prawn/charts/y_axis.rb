@@ -20,15 +20,24 @@ module Prawn
         @percentage = opts[:percentage]
       end
 
+      def with_font
+        original_font = @pdf.font_size
+        @pdf.font_size -= 2
+        yield
+        @pdf.font_size = original_font
+      end
+
       def draw
-        bounding_box at, width: width, height: height do
-          last_point = nil
-          list.each do |item|
-            percent = ((item - points.min).to_f / axis_height.to_f)
-            y_point = (percent * bounds.height) - (text_height).to_i
-            if y_point > (last_point || y_point - 1)
-              text_box formatter.call(item), at: [0, y_point], align: :right
-              last_point = y_point + text_height
+        with_font do
+          bounding_box at, width: width, height: height do
+            last_point = nil
+            list.each do |item|
+              percent = ((item - points.min).to_f / axis_height.to_f)
+              y_point = (percent * bounds.height) - (text_height).to_i
+              if y_point > (last_point || y_point - 1)
+                text_box formatter.call(item), at: [0, y_point], align: :right
+                last_point = y_point + text_height
+              end
             end
           end
         end

@@ -3,7 +3,7 @@ module Prawn
 
     class Legend
 
-      attr_reader :at, :width, :height
+      attr_reader :at, :width, :height, :bar_height
 
       extend Forwardable
 
@@ -21,24 +21,28 @@ module Prawn
         @series    = opts[:series]
         @formatter = opts[:formatter]
         @left      = opts[:left]
+        @bar_height = 3
       end
 
 
       def draw
         bounding_box at, width: width, height: height do
-          enum = @series.each
-          label_coordinates.each do |point|
-            with_color do
+          with_font do
+            enum = @series.each
+            label_coordinates.each do |point|
+              with_color do
 
-              begin
-                item = enum.next
-                rec_point = [point.first, point.last - label_height + 2]
-                bounding_box point,height: label_height, width: standard_width do
-                  text item[:name], align: :center
+
+                begin
+                  item = enum.next
+                  rec_point = [point.first, point.last - label_height]
+                  bounding_box point,height: label_height, width: standard_width do
+                    text item[:name], align: :center
+                  end
+                  fill_color item[:color]
+                  fill_rectangle rec_point, standard_width, bar_height
+                rescue StopIteration
                 end
-                fill_color item[:color]
-                fill_rectangle rec_point, standard_width, 3
-              rescue StopIteration
               end
             end
           end
@@ -53,16 +57,23 @@ module Prawn
         @pdf.stroke_color = original_stroke_color
       end
 
+      def with_font
+        original_font = @pdf.font_size
+        @pdf.font_size -= 2
+        yield
+        @pdf.font_size = original_font
+      end
+
       def label_coordinates
         return @corrinates unless @corrinates.nil?
-        horz_count = (width.to_f / standard_width.to_f).ceil
-        vert_count = (height.to_f / label_height.to_f).ceil
+        horz_count = (width.to_f / standard_width.to_f).floor
+        vert_count = (height.to_f / (label_height.to_f)).ceil
         @corrinates = []
         vert_count.times do |y|
           horz_count.times do |x|
             x_corr= x * standard_width
             x_corr = bounds.right - ((x+1) * standard_width) if @left
-            @corrinates.push [x_corr,(y * (label_height)) + bounds.height]
+            @corrinates.push [x_corr,(y * (-(label_height + bar_height + 2))) + bounds.height]
           end
         end
 

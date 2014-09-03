@@ -127,7 +127,7 @@ module Prawn
       end
 
       def draw_legend
-        point = [chart_at.first, bounds.top - height_of(series.first[:name].to_s)]
+        point = [chart_at.first, bounds.top - height_of(series.first[:name].to_s) - 5]
         opts = {
           at: point,
           width:chart_width,
