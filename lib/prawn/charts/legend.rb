@@ -35,12 +35,13 @@ module Prawn
 
                 begin
                   item = enum.next
+                  w =  width_of(item[:name]) + side
                   rec_point = [point.first, point.last - label_height]
-                  bounding_box point,height: label_height, width: standard_width do
+                  bounding_box point,height: label_height, width: w  do
                     text item[:name], align: :center
                   end
                   fill_color item[:color]
-                  fill_rectangle rec_point, standard_width, bar_height
+                  fill_rectangle rec_point, w, bar_height
                 rescue StopIteration
                 end
               end
@@ -66,16 +67,25 @@ module Prawn
 
       def label_coordinates
         return @corrinates unless @corrinates.nil?
-        horz_count = (width.to_f / standard_width.to_f).floor
-        vert_count = (height.to_f / (label_height.to_f)).ceil
         @corrinates = []
-        vert_count.times do |y|
-          horz_count.times do |x|
-            x_corr= x * standard_width
-            x_corr = bounds.right - ((x+1) * standard_width) if @left
-            @corrinates.push [x_corr,(y * (-(label_height + bar_height + 2))) + bounds.height]
+
+        last_width = 0
+        x,y =0,height
+        @series.each_with_index do |item,index|
+          x = last_width
+          w = width_of(item[:name]) + side
+
+          if x + w > bounds.width
+            x = 0
+            last_width = 0
+            y -= (label_height + bar_height + 2)
           end
+
+          @corrinates.push [x,y]
+
+          last_width += w
         end
+        puts @corrinates.inspect
 
         @corrinates
       end

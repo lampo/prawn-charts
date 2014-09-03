@@ -30,13 +30,13 @@ Prawn::Document.generate('chart.pdf') do
         values:           red
       },
       {
-        name:             'Green',
+        name:             'Green Also Long',
         color:            '0000',
         value_formatter:  lambda{|value| value.to_s},
         values:           green
       },
       {
-        name:             'Blue',
+        name:             'Blue Long',
         color:            '1BB2',
         value_formatter:  lambda{|value| value.to_s},
         values:           blue
