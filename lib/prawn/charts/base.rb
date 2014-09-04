@@ -96,7 +96,6 @@ module Prawn
       def draw
         with_color do
           bounding_box at, width: width, height: height do
-            stroke_bounds
 
             with_larger_font { draw_title }
             draw_legend
