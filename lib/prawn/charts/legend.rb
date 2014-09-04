@@ -60,7 +60,7 @@ module Prawn
 
       def with_font
         original_font = @pdf.font_size
-        @pdf.font_size -= 2
+        @pdf.font_size -= 3
         yield
         @pdf.font_size = original_font
       end
@@ -74,6 +74,7 @@ module Prawn
         @series.each_with_index do |item,index|
           x = last_width
           w = width_of(item[:name]) + side
+          x = (bounds.right - w - last_width) if @left
 
           if x + w > bounds.width
             x = 0

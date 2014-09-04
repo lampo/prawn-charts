@@ -55,10 +55,10 @@ module Prawn
       def defaults
         {
           padding:  {
-            bottom:  50,
-            left:    50,
-            right:   50,
-            top:     25,
+            bottom:  0,
+            left:    30,
+            right:   30,
+            top:     100,
           },
           at:      [bounds.left, bounds.top],
           width:   bounds.width,
@@ -79,11 +79,26 @@ module Prawn
         @pdf.stroke_color = original_stroke_color
       end
 
+      def with_smaller_font val = 3
+        original_font = @pdf.font_size
+        @pdf.font_size -= val
+        yield
+        @pdf.font_size = original_font
+      end
+
+      def with_larger_font val = 3
+        original_font = @pdf.font_size
+        @pdf.font_size += val
+        yield
+        @pdf.font_size = original_font
+      end
+
       def draw
         with_color do
           bounding_box at, width: width, height: height do
+            stroke_bounds
 
-            draw_title
+            with_larger_font { draw_title }
             draw_legend
 
             bounding_box(chart_at, width: chart_width, height: chart_height) do
@@ -104,7 +119,7 @@ module Prawn
       end
 
       def padding_left_right
-        padding[:left] + padding[:right]
+        padding[:left] + padding[:right] + y_axis_width - 10
       end
 
       def chart_at
@@ -116,22 +131,29 @@ module Prawn
       end
 
       def chart_height
-        bounds.height - padding_top_bottom
+        bounds.height - title_height - legend_height - (x_axis_height * 2)
       end
 
       def draw_title
         opts ={ width: bounds.width, height: height_of(title.to_s) }
-        bounding_box( [bounds.left, bounds.top - height_of(title.to_s) / 2], opts ) do
+        bounding_box( [bounds.left, bounds.top - 1 ], opts ) do
           text title, align: :center
         end
       end
 
+      def legend_at
+        [chart_at.first, bounds.top - height_of(series.first[:name].to_s) - 5]
+      end
+
+      def legend_height
+        ( legend_at.last - chart_at.last )
+      end
+
       def draw_legend
-        point = [chart_at.first, bounds.top - height_of(series.first[:name].to_s) - 5]
         opts = {
-          at: point,
+          at: legend_at,
           width:chart_width,
-          height: ( point.last - chart_at.last ),
+          height: legend_height,
           series: series,
           left: y1[:display]
 
@@ -139,38 +161,59 @@ module Prawn
         Prawn::Charts::Legend.new(pdf, opts).draw
       end
 
-      def draw_x_axis
-        txt = series.map do |s|
+      def x_axis_height
+        @x_axis_height ||= series.map do |s|
           s[:values].map{ |v| height_of(key_formatter.call(v[:key]))}.max
         end.max
+      end
+
+      def draw_x_axis
 
         opts = {
           series:  series,
           at:      [0,0],
           width:   bounds.width,
-          height:  txt,
+          height:  x_axis_height,
           points:  x_points,
           formatter: key_formatter
         }
 
         Prawn::Charts::XAxis.new(pdf, opts).draw
 
-        opts ={ width: bounds.width, height: height_of(x[:title]) }
-        bounding_box( [bounds.left, (-txt - height_of(x[:title]) / 2)], opts ) do
-          text x[:title], align: :center
+        with_smaller_font do
+          opts ={ width: bounds.width, height: height_of(x[:title]) }
+          bounding_box( [bounds.left, (-x_axis_height - height_of(x[:title]) / 2)], opts ) do
+            text x[:title], align: :center
+          end
         end
       end
 
-      def draw_y_axis
-        txt = series.map do |s|
-          s[:values].map{ |v| width_of(value_formatter.call(v[:value]))}.max
-        end.max
+      def title_height
+        val = 0
+        with_larger_font do
+          val = height_of(title.to_s)
+        end
+        val
+      end
 
-        txt = width_of('100%') if percentage
+      def y_axis_width
+        @y_axis_width ||= begin
+                            txt = series.map do |s|
+                              s[:values].map do |v|
+                                width_of(value_formatter.call(v[:value]))
+                              end.max
+                            end.max
+
+                            txt = width_of('100%') if percentage
+                            txt
+                          end
+      end
+
+      def draw_y_axis
 
         opts = {
-          at:         [-txt, bounds.height],
-          width:      txt,
+          at:         [-y_axis_width, bounds.height],
+          width:      y_axis_width,
           height:     bounds.height,
           points:     [min_value, max_value],
           formatter:  value_formatter,
@@ -179,19 +222,17 @@ module Prawn
 
         Prawn::Charts::YAxis.new(pdf, opts).draw
 
-        mid = (bounds.height - width_of(y[:title])) / 2
-        draw_text y[:title], { at: [(-txt - 1), mid ], rotate: 90 }
+        with_smaller_font do
+          mid = (bounds.height - width_of(y[:title])) / 2
+          draw_text y[:title], { at: [(-y_axis_width - 1), mid ], rotate: 90 }
+        end
 
       end
 
       def draw_y1_axis
-        txt = series.map do |s|
-          s[:values].map{ |v| width_of(value_formatter.call(v[:value]))}.max
-        end.max
-
         opts = {
           at:         [bounds.right, bounds.height],
-          width:      txt,
+          width:      y_axis_width,
           height:     bounds.height,
           points:     [min_value, max_value],
           formatter:  value_formatter
@@ -199,8 +240,10 @@ module Prawn
 
         Prawn::Charts::YAxis.new(pdf, opts).draw
 
-        mid = bounds.height - width_of(y1[:title])
-        draw_text y[:title], { at: [bounds.right + txt + 1, mid ], rotate: 270 }
+        with_smaller_font do
+          mid = bounds.height - width_of(y1[:title])
+          draw_text y[:title], { at: [bounds.right + y_axis_width + 1, mid ], rotate: 270 }
+        end
 
       end
 
