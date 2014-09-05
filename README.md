@@ -19,7 +19,6 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
 
 ``` ruby
 
@@ -35,31 +34,28 @@ Prawn::Document.generate('chart.pdf') do
   end
 
   opts = {
-    at:      [bounds.width - 500, bounds.top],
-    width:   500,
-    height:  bounds.height / 4,
-    x: {title: 'X Axis', display: true},
-    y: {title: 'Y Axis', display: true},
+    at:               [bounds.width - 500, bounds.top],
+    width:            500,
+    height:           bounds.height / 4,
+    x:                {title: 'X Axis', display: true},
+    y:                {title: 'Y Axis', display: true},
     key_formatter:    lambda{|key| (Date.today >> key).strftime('%b %Y')},
     value_formatter:  lambda{|value| value.to_s},
     series: [
       {
-        name:             'Red',
-        color:            'FF6961',
-        value_formatter:  lambda{|value| value.to_s},
-        values:           red
+        name:    'Red',
+        color:   'FF6961',
+        values:  red
       },
       {
-        name:             'Green',
-        color:            '03C03C',
-        value_formatter:  lambda{|value| value.to_s},
-        values:           green
+        name:    'Green',
+        color:   '03C03C',
+        values:  green
       },
       {
-        name:             'Blue',
-        color:            '779ECB',
-        value_formatter:  lambda{|value| value.to_s},
-        values:           blue
+        name:    'Blue',
+        color:   '779ECB',
+        values:  blue
       }
     ]
  }
@@ -85,11 +81,9 @@ Prawn::Document.generate('chart.pdf') do
     y1: {title: 'Y1 Axis', display: true  } ,
     series: [
       {
-        name:             'Red',
-        color:            'FF6961',
-        key_formatter:    lambda{|key| 'Red ' * key},
-        value_formatter:  lambda{|value| value.to_s},
-        values:           red
+        name:    'Red',
+        color:   'FF6961',
+        values:  red
       },
     ]
   })
@@ -100,11 +94,9 @@ Prawn::Document.generate('chart.pdf') do
     y: {title: 'Y Axis', display: true},
     series: [
       {
-        name:             'Blue',
-        color:            '779ECB',
-        key_formatter:    lambda{|key| key.to_s},
-        value_formatter:  lambda{|value| value.to_s},
-        values:           blue
+        name:    'Blue',
+        color:   '779ECB',
+        values:  blue
       },
     ]
   })
@@ -115,6 +107,7 @@ Prawn::Document.generate('chart.pdf') do
     bar_chart.config.at  = [ bar_chart.config.at.first, bar_chart.config.at.last - bar_chart.config.height * 3]
   end
 end
+
 ```
 
 ## Contributing

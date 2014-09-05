@@ -25,19 +25,16 @@ Prawn::Document.generate('chart.pdf') do
       {
         name:             'Red',
         color:            'FF6961',
-        value_formatter:  lambda{|value| value.to_s},
         values:           red
       },
       {
         name:             'Green',
         color:            '03C03C',
-        value_formatter:  lambda{|value| value.to_s},
         values:           green
       },
       {
         name:             'Blue',
         color:            '779ECB',
-        value_formatter:  lambda{|value| value.to_s},
         values:           blue
       }
     ]
@@ -66,8 +63,6 @@ Prawn::Document.generate('chart.pdf') do
       {
         name:             'Red',
         color:            'FF6961',
-        key_formatter:    lambda{|key| 'Red ' * key},
-        value_formatter:  lambda{|value| value.to_s},
         values:           red
       },
     ]
@@ -81,8 +76,6 @@ Prawn::Document.generate('chart.pdf') do
       {
         name:             'Blue',
         color:            '779ECB',
-        key_formatter:    lambda{|key| key.to_s},
-        value_formatter:  lambda{|value| value.to_s},
         values:           blue
       },
     ]
