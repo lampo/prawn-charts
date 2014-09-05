@@ -3,15 +3,17 @@ module Prawn
 
     class Combo
 
+      attr_reader :line_chart, :bar_chart
+
       def initialize pdf, opts = {}
         @pdf        = pdf
-        @line_chart = opts[:line_chart]
-        @bar_chart  = opts[:bar_chart]
+        @bar_chart = Prawn::Charts::Bar.new( @pdf,  opts[:bar_chart] )
+        @line_chart = Prawn::Charts::Line.new(@pdf, opts[:line_chart] )
       end
 
       def draw
-        Prawn::Charts::Bar.new( @pdf,  @bar_chart ).draw
-        Prawn::Charts::Line.new(@pdf, @line_chart ).draw
+        bar_chart.draw
+        line_chart.draw
       end
 
     end

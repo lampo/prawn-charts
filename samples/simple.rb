@@ -8,16 +8,15 @@ Prawn::Document.generate('chart.pdf') do
   blue  = []
 
   5.times do |i|
-    red.push(   { key: i, value: rand(780) + 750 })
-    green.push( { key: i, value: rand(780) + 750 })
-    blue.push(  { key: i, value: rand(780) + 750 })
+    red.push(   { key: i, value: rand(500) + 100 })
+    green.push( { key: i, value: rand(400) + 100 })
+    blue.push(  { key: i, value: rand(300) + 100 })
   end
 
   opts = {
-    title:   'Bar',
-    at:      [bounds.left + 20, bounds.top],
+    at:      [bounds.width - 500, bounds.top],
     width:   500,
-    height:  200,
+    height:  bounds.height / 4,
     x: {title: 'X Axis', display: true},
     y: {title: 'Y Axis', display: true},
     key_formatter:    lambda{|key| (Date.today >> key).strftime('%b %Y')},
@@ -25,50 +24,48 @@ Prawn::Document.generate('chart.pdf') do
     series: [
       {
         name:             'Red',
-        color:            'FF00',
+        color:            'FF6961',
         value_formatter:  lambda{|value| value.to_s},
         values:           red
       },
       {
-        name:             'Green Also Long',
-        color:            '0000',
+        name:             'Green',
+        color:            '03C03C',
         value_formatter:  lambda{|value| value.to_s},
         values:           green
       },
       {
-        name:             'Blue Long',
-        color:            '1BB2',
+        name:             'Blue',
+        color:            '779ECB',
         value_formatter:  lambda{|value| value.to_s},
         values:           blue
       }
-    ] * 4
-  }
+    ]
+ }
 
   bar_chart(opts) do |config|
     config.title = 'Bar'
   end
 
-  start_new_page
   stacked_bar_chart(opts) do |config|
+    config.at = [ config.at.first, config.at.last - config.height]
     config.title = 'Stacked Bar'
   end
 
-  start_new_page
   line_chart(opts) do |config|
+    config.at = [ config.at.first, config.at.last - config.height * 2]
     config.title = 'Line Chart'
   end
 
-  start_new_page
 
   line_opts = opts.merge({
-    title: nil,
-    x: {title: 'X Axis', display: false},
-    y: {title: 'Y Axis', display: false},
-    y1: {title: 'Y1 Axis', display: true},
+    x:  {title: 'X Axis' , display: false } ,
+    y:  {title: 'Y Axis' , display: false } ,
+    y1: {title: 'Y1 Axis', display: true  } ,
     series: [
       {
         name:             'Red',
-        color:            'FF00',
+        color:            'FF6961',
         key_formatter:    lambda{|key| 'Red ' * key},
         value_formatter:  lambda{|value| value.to_s},
         values:           red
@@ -83,12 +80,17 @@ Prawn::Document.generate('chart.pdf') do
     series: [
       {
         name:             'Blue',
-        color:            'A33A',
+        color:            '779ECB',
         key_formatter:    lambda{|key| key.to_s},
         value_formatter:  lambda{|value| value.to_s},
         values:           blue
       },
     ]
   })
-  combo_chart(line_chart: line_opts, bar_chart: bar_opts)
+  combo_chart(line_chart: line_opts, bar_chart: bar_opts) do |config|
+    line_chart, bar_chart  = config.line_chart, config.bar_chart
+
+    line_chart.config.at = [ line_chart.config.at.first, line_chart.config.at.last - line_chart.config.height * 3]
+    bar_chart.config.at  = [ bar_chart.config.at.first, bar_chart.config.at.last - bar_chart.config.height * 3]
+  end
 end

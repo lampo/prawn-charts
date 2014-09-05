@@ -54,6 +54,7 @@ module Prawn
 
       def defaults
         {
+          title: '',
           padding:  {
             bottom:  0,
             left:    30,
@@ -299,9 +300,9 @@ module Prawn
         keys.map do |key|
           items = for_key(key)
           {
-            key: key,
-            values: items,
-            total: items.inject(0){ |s,v| s + v[:value] }
+            key:     key,
+            values:  items,
+            total:   items.inject(0){ |s,v| s + v[:value] }
           }
         end
       end

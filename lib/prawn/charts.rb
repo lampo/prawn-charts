@@ -123,7 +123,7 @@ module Prawn
     # @return [Prawn::Charts::Combo]
     def combo_chart opts={}, &block
       chart = Prawn::Charts::Combo.new(self, opts)
-      #yield chart if block_given?
+      yield chart if block_given?
       chart.draw
     end
   end
