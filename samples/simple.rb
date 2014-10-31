@@ -8,9 +8,9 @@ Prawn::Document.generate('chart.pdf') do
   blue  = []
 
   5.times do |i|
-    red.push(   { key: i, value: rand(500) + 100 })
-    green.push( { key: i, value: rand(400) + 100 })
-    blue.push(  { key: i, value: rand(300) + 100 })
+    red.push(   { key: i, value: rand(500) + 10 })
+    green.push( { key: i, value: rand(400) + 10 })
+    blue.push(  { key: i, value: rand(300) + 10 })
   end
 
   opts = {
