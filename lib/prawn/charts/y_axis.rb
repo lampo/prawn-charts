@@ -58,17 +58,30 @@ module Prawn
 
       def list
         return percentage_list if percentage?
-        return @range if @range
+        return @range.uniq if @range
         @range =[]
-        (points.min.to_i..points.max.to_i).each_slice(exp) do |n|
-          @range.push n.first
+        min_val = exp(points.max / 4)
+        result = points.min - (points.min % min_val) - min_val
+        @range.push(result)
+
+        (points.min.to_i..points.max.to_i).each do |n|
+          val = n == 0 ? 1 : n
+          result = val - (val % min_val) - min_val
+          @range.push(result)
         end
-        @range
+
+        val = points.max
+        result = val - (val % min_val) - min_val
+        @range.push(result)
+        @range.uniq
       end
 
-      def exp
-        n = points.min <= 0 ? 10 : points.min
-        10 ** (Math.log10(n).floor)
+      def exp n, offset = 0
+        if n <= 0
+          1
+        else
+          10 ** (Math.log10(n).floor) - offset
+        end
       end
 
       def percentage?
