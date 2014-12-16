@@ -20,6 +20,8 @@ module Prawn
           end
 
           stroke_color bar[:color]
+          original_width = line_width
+          line_width(bar[:line_width] || original_width)
           stroke do
             last_point = points.first
             points.each do |point|
@@ -27,6 +29,8 @@ module Prawn
               last_point = point
             end
           end
+
+          line_width(original_width)
 
         end
       end

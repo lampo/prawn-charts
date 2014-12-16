@@ -2,6 +2,10 @@ require 'prawn'
 require 'date'
 require_relative '../lib/prawn/charts'
 
+normal = 1
+mid = 2
+long =3
+
 Prawn::Document.generate('chart.pdf') do
   red   = []
   green = []
@@ -23,19 +27,22 @@ Prawn::Document.generate('chart.pdf') do
     value_formatter:  lambda{|value| value.to_s},
     series: [
       {
-        name:             'Red',
-        color:            'FF6961',
-        values:           red
+        name:        'Red',
+        color:       'FF6961',
+        line_width:  normal,
+        values:      red
       },
       {
-        name:             'Green',
-        color:            '03C03C',
-        values:           green
+        name:        'Green',
+        color:       '03C03C',
+        line_width:  mid,
+        values:      green
       },
       {
-        name:             'Blue',
-        color:            '779ECB',
-        values:           blue
+        name:        'Blue',
+        color:       '779ECB',
+        line_width:  long,
+        values:      blue
       }
     ]
  }
@@ -61,9 +68,10 @@ Prawn::Document.generate('chart.pdf') do
     y1: {title: 'Y1 Axis', display: true  } ,
     series: [
       {
-        name:             'Red',
-        color:            'FF6961',
-        values:           red
+        name:        'Blue',
+        color:       '779ECB',
+        line_width:  long,
+        values:      red
       },
     ]
   })
@@ -74,9 +82,10 @@ Prawn::Document.generate('chart.pdf') do
     y: {title: 'Y Axis', display: true},
     series: [
       {
-        name:             'Blue',
-        color:            '779ECB',
-        values:           blue
+        name:        'Red',
+        color:       'FF6961',
+        line_width:  long,
+        values:      blue
       },
     ]
   })

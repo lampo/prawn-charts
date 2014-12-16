@@ -14,7 +14,7 @@ module Prawn
       def_delegators :@pdf, :stroke_axis, :rotate, :stroke_bounds
       def_delegators :@pdf, :height_of, :width_of
       def_delegators :@pdf, :fill, :fill_color
-      def_delegators :@pdf, :rectangle, :stroke_color, :line, :stroke
+      def_delegators :@pdf, :rectangle, :stroke_color, :line, :stroke, :line_width
       def_delegators :@pdf, :fill_ellipse, :curve
 
       #
