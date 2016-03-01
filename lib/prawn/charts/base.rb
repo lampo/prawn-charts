@@ -98,8 +98,8 @@ module Prawn
         with_color do
           bounding_box at, width: width, height: height do
 
-            with_larger_font { draw_title }
-            draw_legend
+            with_larger_font { draw_title } if config[:title].present?
+            draw_legend if config[:legend].present?
 
             bounding_box(chart_at, width: chart_width, height: chart_height) do
 
