@@ -281,7 +281,11 @@ module Prawn
 
       def min_value
         n = (values.min - delta_value * 0.1).to_i
-        n - (n % exp(n)) - exp(n)
+        if n.zero?
+          0
+        else
+          n - (n % exp(n)) - exp(n)
+        end
       end
 
       def delta_value

@@ -69,7 +69,15 @@ module Prawn
       end
 
       def value_height val
-        bounds.height * ((val - min_value) / series_height.to_f)
+        if val == 0
+          text_height
+        else
+          ((bounds.height - text_height) * ((val - min_value) / series_height.to_f)) + text_height
+        end
+      end
+
+      def text_height
+        @text_height ||= height_of("0")
       end
 
     end
