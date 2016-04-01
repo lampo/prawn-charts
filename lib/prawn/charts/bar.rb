@@ -10,6 +10,7 @@ module Prawn
 
       def plot_values
         return if series.nil?
+        orig_color = fill_color
         series.each_with_index do |bar,index|
           point_x = first_x_point index
 
@@ -18,11 +19,23 @@ module Prawn
             fill do
               height = value_height(h[:value])
               rectangle [point_x,height], bar_width, height
+              with_smaller_font do
+                fill_color orig_color
+                text_box value_formatter.call(h[:value]), at: [point_x, height + 10], width: bar_width, align: :center
+                fill_color bar[:color]
+              end
             end
             point_x += additional_points
           end
 
         end
+      end
+
+      def with_smaller_font val = 3
+        original_font = @pdf.font_size
+        @pdf.font_size -= val
+        yield
+        @pdf.font_size = original_font
       end
 
       def first_x_point index
@@ -70,14 +83,12 @@ module Prawn
 
       def value_height val
         if val == 0
-          text_height
+          bounds.height * 0.01
+        elsif percentage
+          (bounds.height * ((val) * 0.01))
         else
-          ((bounds.height - text_height) * ((val - min_value) / series_height.to_f)) + text_height
+          (bounds.height * ((val - min_value) / series_height.to_f))
         end
-      end
-
-      def text_height
-        @text_height ||= height_of("0")
       end
 
     end

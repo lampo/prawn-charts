@@ -24,6 +24,7 @@ module Prawn
       # @option opts :at [Array<x,y>]
       # @option opts :width [Fixnum] (500)
       # @option opts :height [Fixnum] (200)
+      # @option opts :percentage [Boolean] (false)
       # @option opts :x  [Hash] ({title: 'X Axis', display: false })
       # @option opts :y  [Hash] ({title: 'Y Axis', display: false})
       # @option opts :y1 [Hash] ({title: 'Y1 Axis', display: false})
@@ -64,6 +65,7 @@ module Prawn
           at:      [bounds.left, bounds.top],
           width:   bounds.width,
           height:  bounds.height,
+          percentage: false,
           x:  { display: false },
           y:  { display: false },
           y1: { display: false },
@@ -197,8 +199,19 @@ module Prawn
       end
 
       def y_axis_width
+        if percentage || only_zero?
+          vals = [ { values: [
+            { value: 0 },
+            { value: 25 },
+            { value: 50 },
+            { value: 75 },
+            { value: 100 }
+          ] } ]
+        else
+          vals = series
+        end
         @y_axis_width ||= begin
-                            txt = series.map do |s|
+                            txt = vals.map do |s|
                               s[:values].map do |v|
                                 width_of(value_formatter.call(v[:value]))
                               end.max
@@ -217,7 +230,8 @@ module Prawn
           height:     bounds.height,
           points:     [min_value, max_value],
           formatter:  value_formatter,
-          percentage: percentage
+          percentage: percentage,
+          only_zero: only_zero?
         }
 
         Prawn::Charts::YAxis.new(pdf, opts).draw
@@ -235,7 +249,8 @@ module Prawn
           width:      y_axis_width,
           height:     bounds.height,
           points:     [min_value, max_value],
-          formatter:  value_formatter
+          formatter:  value_formatter,
+          only_zero: only_zero?
         }
 
         Prawn::Charts::YAxis.new(pdf, opts).draw
@@ -271,7 +286,7 @@ module Prawn
       end
 
       def max_value
-        increment = exp(min_value) * 2
+        increment = exp(step_value) * 2
         mvalue = values.max
 
         (min_value..(mvalue + increment )).detect do |sample|
@@ -279,13 +294,16 @@ module Prawn
         end || (mvalue + increment)
       end
 
-      def min_value
+      def step_value
         n = (values.min - delta_value * 0.1).to_i
-        if n.zero?
-          0
-        else
-          n - (n % exp(n)) - exp(n)
-        end
+        n - (n % exp(n)) - exp(n)
+      end
+
+      def min_value
+        # Original code, probably needs config to enable
+        # n = (values.min - delta_value * 0.1).to_i
+        # n - (n % exp(n)) - exp(n)
+        0
       end
 
       def delta_value
@@ -294,10 +312,6 @@ module Prawn
 
       def series_height
         max_value - min_value
-      end
-
-      def percentage
-        false
       end
 
       def stacked_bar_values
@@ -311,6 +325,9 @@ module Prawn
         end
       end
 
+      def only_zero?
+        values.min.zero? && values.max.zero?
+      end
 
       def for_key key
         series.map do |v|
