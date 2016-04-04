@@ -72,14 +72,18 @@ module Prawn
         (bounds.height / text_height).to_i
       end
 
-      def list
+      def list(zero_base = true)
         return percentage_list if percentage? || only_zero?
         return @range.uniq if @range
         @range =[]
         min_val = exp(points.max / 4)
-        result = points.min - (points.min % min_val) - min_val
-        # @range.push(result)
-        @range.push(0)
+        first_value =
+          if zero_base
+            0
+          else 
+            points.min - (points.min % min_val) - min_val
+          end
+        @range.push(first_value)
 
         (points.min.to_i..points.max.to_i).each do |n|
           val = n == 0 ? 1 : n

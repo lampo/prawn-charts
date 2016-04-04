@@ -10,20 +10,18 @@ module Prawn
 
       def plot_values
         return if series.nil?
-        orig_color = fill_color
         series.each_with_index do |bar,index|
           point_x = first_x_point index
 
           bar[:values].each do |h|
-            fill_color bar[:color]
-            fill do
-              height = value_height(h[:value])
-              rectangle [point_x,height], bar_width, height
-              with_smaller_font do
-                fill_color orig_color
-                text_box value_formatter.call(h[:value]), at: [point_x, height + 10], width: bar_width, align: :center
-                fill_color bar[:color]
+            height = value_height(h[:value])
+            with_color bar[:color] do 
+              fill do
+                rectangle [point_x,height], bar_width, height
               end
+            end
+            with_smaller_font do
+              text_box value_formatter.call(h[:value]), at: [point_x, height + 10], width: bar_width, align: :center
             end
             point_x += additional_points
           end
@@ -82,13 +80,15 @@ module Prawn
       end
 
       def value_height val
-        if val == 0
-          bounds.height * 0.01
-        elsif percentage
-          (bounds.height * ((val) * 0.01))
-        else
-          (bounds.height * ((val - min_value) / series_height.to_f))
-        end
+        scale_factor = 
+          if val == 0
+            0.01
+          elsif percentage
+            val * 0.01
+          else
+            (val - min_value) / series_height.to_f
+          end
+        scale_factor * bounds.height
       end
 
     end

@@ -74,9 +74,13 @@ module Prawn
         }
       end
 
-      def with_color color = '000000'
+      def with_color(color = nil)
         original_fill_color   = @pdf.fill_color
         original_stroke_color = @pdf.stroke_color
+        if color
+          fill_color color
+          stroke_color color
+        end
         yield
         @pdf.fill_color   = original_fill_color
         @pdf.stroke_color = original_stroke_color
@@ -326,7 +330,7 @@ module Prawn
       end
 
       def only_zero?
-        values.min.zero? && values.max.zero?
+        values.all?(&:zero?)
       end
 
       def for_key key
