@@ -74,8 +74,9 @@ module Prawn
 
       def list(zero_base = true)
         return percentage_list if percentage? || only_zero?
-        return @range.uniq if @range
-        @range =[]
+        return @range unless @range.nil?
+
+        @range = []
         min_val = exp(points.max / 4)
         first_value =
           if zero_base
@@ -85,16 +86,21 @@ module Prawn
           end
         @range.push(first_value)
 
-        (points.min.to_i..points.max.to_i).each do |n|
+        point_range = points.max.to_i - points.min.to_i
+        stride = point_range/12.0
+        n = points.min
+        while n < points.max
           val = n == 0 ? 1 : n
           result = val - (val % min_val) - min_val
           @range.push(result)
+          n += stride
         end
 
         val = points.max
         result = val - (val % min_val) - min_val
         @range.push(result)
-        @range.uniq
+        @range.uniq!
+        @range
       end
 
       def exp n, offset = 0

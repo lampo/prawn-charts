@@ -292,10 +292,7 @@ module Prawn
       def max_value
         increment = exp(step_value) * 2
         mvalue = values.max
-
-        (min_value..(mvalue + increment )).detect do |sample|
-          sample >= mvalue + increment
-        end || (mvalue + increment)
+        mvalue + increment
       end
 
       def step_value
@@ -330,7 +327,7 @@ module Prawn
       end
 
       def only_zero?
-        values.all?(&:zero?)
+        @zero ||= values.all?(&:zero?)
       end
 
       def for_key key
