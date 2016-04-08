@@ -1,6 +1,6 @@
 module Prawn
   module Charts
-    class Bar < Base
+    class Bar < VerticalBase
       attr_accessor :ratio
 
       def initialize pdf, opts = {}
@@ -13,9 +13,13 @@ module Prawn
         series.each_with_index do |bar,index|
           point_x = first_x_point index
 
-          bar[:values].each do |h|
+          bar[:values].each_with_index do |h, i|
             height = value_height(h[:value])
-            with_color bar[:color] do 
+            if bar[:colors]
+              color = bar[:colors][i]
+            end
+            color ||= bar[:color]
+            with_color color do
               fill do
                 rectangle [point_x,height], bar_width, height
               end
@@ -75,10 +79,6 @@ module Prawn
         @bar_space ||= (bounds.width * (1.0 - ratio)) / (series_length + 1).to_f
       end
 
-      def series_length
-        series.map { |v| v[:values].length }.max * series.count
-      end
-
       def value_height val
         scale_factor = 
           if val == 0
@@ -86,7 +86,7 @@ module Prawn
           elsif percentage
             val * 0.01
           else
-            (val - min_value) / series_height.to_f
+            (val - min_value) / series_span.to_f
           end
         scale_factor * bounds.height
       end

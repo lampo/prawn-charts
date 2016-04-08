@@ -1,63 +1,57 @@
 module Prawn
   module Charts
-    class YAxis
-      attr_reader :pdf
-      attr_accessor :points, :at, :width, :height, :formatter, :percentage
-
-      extend Forwardable
-
-      def_delegators :@pdf, :bounding_box, :stroke_bounds, :text
-      def_delegators :@pdf, :height_of, :width_of, :fill_color
-      def_delegators :@pdf, :text_box, :bounds
-
+    class YAxis < Axis
       def initialize pdf, opts
-        @pdf        = pdf
-        @at         = opts[:at]
-        @width      = opts[:width]
-        @height     = opts[:height]
-        @points     = opts[:points]
-        @formatter  = opts[:formatter]
-        @percentage = opts[:percentage]
-        @only_zero = opts[:only_zero]
-
-        if percentage?
-          @points = [0, 100]
-        end
+        super(pdf, opts)
       end
 
-      def with_font
-        original_font = @pdf.font_size
-        @pdf.font_size -= 2
-        yield
-        @pdf.font_size = original_font
-      end
-
-      def draw
+      def draw_series
         with_font do
           bounding_box at, width: width, height: height do
-            last_point = nil
-            list.each do |item|
-              percent = ((item - points.min).to_f / (axis_height).to_f)
-              y_point = (percent * (bounds.height - text_height)) + (text_height / 3).to_i
-
-              if y_point < 0
-                y_point = text_height
+            index = 0
+            slice =
+              if label_count_height < series_labels.count
+                (series_labels.count.to_f / label_count_height.to_f).floor
               else
-                y_point = y_point + text_height
+                1
               end
 
-              if y_point > (last_point || y_point - 1)
-                text_box formatter.call(item), at: [0, y_point], align: :right
-                last_point = y_point + text_height * 1.5
-              end
+
+            series_labels.each_slice(slice) do |items|
+              offset = (max_label_height) / 2
+              origin = points[index] - offset
+              point = [0, origin]
+              text_box items.first.to_s, at: point, width: label_width, height: label_height, align: :right
+              index += slice
             end
           end
         end
+        stroke_vertical_line(0, bounds.top + (label_height / 2), at: 0)
       end
 
+      def draw_values
+        with_font do
+          bounding_box at, width: width, height: height do
+            axis_value_labels.each do |val, item|
+              percent =
+                if item.is_a? String
+                  val / axis_height.to_f
+                else
+                  ((item - points.min).to_f / (axis_height).to_f)
+                end
+              y_point = (percent * bounds.height)
 
-      def text_height
-        @text_height ||= height_of(formatter.call( points.first))
+              if y_point < 0
+                y_point = label_height
+              else
+                y_point += 5
+              end
+
+              text_box formatter.call(item), at: [0, y_point], width: label_width, height: label_height, align: :right
+            end
+          end
+        end
+        stroke_vertical_line(0, bounds.top + (label_height / 2), at: 0)
       end
 
       def axis_height
@@ -68,61 +62,17 @@ module Prawn
         end
       end
 
-      def single_height
-        (bounds.height / text_height).to_i
+      def max_label_height
+        ratio * full_label_height
       end
 
-      def list(zero_base = true)
-        return percentage_list if percentage? || only_zero?
-        return @range unless @range.nil?
-
-        @range = []
-        min_val = exp(points.max / 4)
-        first_value =
-          if zero_base
-            0
-          else 
-            points.min - (points.min % min_val) - min_val
-          end
-        @range.push(first_value)
-
-        point_range = points.max.to_i - points.min.to_i
-        stride = point_range/12.0
-        n = points.min
-        while n < points.max
-          val = n == 0 ? 1 : n
-          result = val - (val % min_val) - min_val
-          @range.push(result)
-          n += stride
-        end
-
-        val = points.max
-        result = val - (val % min_val) - min_val
-        @range.push(result)
-        @range.uniq!
-        @range
+      def full_label_height
+        height / series_length.to_f
       end
 
-      def exp n, offset = 0
-        if n <= 0
-          1
-        else
-          10 ** (Math.log10(n).floor) - offset
-        end
+      def label_count_height
+        (bounds.height / max_label_height).to_i
       end
-
-      def only_zero?
-        @only_zero
-      end
-
-      def percentage?
-        @percentage
-      end
-
-      def percentage_list
-        [0, 25, 50, 75, 100]
-      end
-
     end
   end
 end
