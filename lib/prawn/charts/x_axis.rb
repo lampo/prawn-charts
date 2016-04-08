@@ -1,66 +1,64 @@
 module Prawn
   module Charts
-    class XAxis
-      attr_reader :pdf
-      attr_accessor :series, :at, :width, :height, :formatter
-
-      extend Forwardable
-
-      def_delegators :@pdf, :bounding_box, :stroke_bounds, :text
-      def_delegators :@pdf, :height_of, :width_of, :fill_color
-      def_delegators :@pdf, :draw_text, :bounds, :rotate
-
+    class XAxis < Axis
       def initialize pdf, opts
-        @pdf       = pdf
-        @series    = opts[:series]
-        @at        = opts[:at]
-        @width     = opts[:width]
-        @height    = opts[:height]
-        @points    = opts[:points]
-        @formatter = opts[:formatter]
+        super(pdf, opts)
       end
 
-
-      def with_font
-        original_font = @pdf.font_size
-        @pdf.font_size -= 2
-        yield
-        @pdf.font_size = original_font
-      end
-
-      def draw
+      def draw_series
         with_font do
           bounding_box at, width: width, height: height do
             index = 0
-            slice = if label_count_width < labels.count
-                      (labels.count.to_f / label_count_width.to_f).ceil
-                    else
-                      1
-                    end
+            slice =
+              if label_count_width < series_labels.count
+                (series_labels.count.to_f / label_count_width.to_f).floor
+              else
+                1
+              end
 
-            labels.each_slice(slice) do |items|
-              offset = width_of(items.first) / 2
-              origin = [(@points[index] - offset).to_i,0]
-              point = [origin.first,0]
-              draw_text items.first, at: point
+            series_labels.each_slice(slice) do |items|
+              offset = (max_label_width) / 2
+              origin = [(points[index] - offset).to_i, 0]
+              point = [origin.first, 0]
+              text_box items.first.to_s, at: point, width: max_label_width, height: label_height, align: :center
               index += slice
             end
           end
         end
+        stroke_horizontal_line 0, bounds.width, at: 0
       end
 
-      def labels
-        @labels ||= series.map do |s|
-          s[:values].map do |v|
-            formatter.call(v[:key])
-          end.uniq
-        end.flatten.uniq
+      def draw_values
+        with_font do
+          bounding_box at, width: width, height: height do
+            axis_value_labels.each do |val, item|
+              percent =
+                if item.is_a? String
+                  val / axis_width.to_f
+                else
+                  ((item - points.min).to_f / (axis_width).to_f)
+                end
+              x_point = (percent * (width - 10)) - (max_label_width / 2.0)
+
+              text_box formatter.call(item), at: [x_point, 10], width: max_label_width, height: label_height, align: :center
+            end
+          end
+        end
+
+        stroke_horizontal_line 0, bounds.width, at: 0
       end
 
-      def max_label_width
-        @max_label_width ||= labels.map { |label| width_of(label) }.max
+      def axis_width
+        if only_zero? || percentage?
+          100
+        else
+          points.max - points.min
+        end
       end
 
+      def label_height
+        height_of("0") * 10 # arbitrarily long, any extra space is transparent
+      end
 
       def label_count_width
         (bounds.width / max_label_width).to_i

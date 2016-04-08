@@ -14,7 +14,8 @@ module Prawn
       def_delegators :@pdf, :stroke_axis, :rotate, :stroke_bounds
       def_delegators :@pdf, :height_of, :width_of
       def_delegators :@pdf, :fill, :fill_color
-      def_delegators :@pdf, :rectangle, :stroke_color, :line, :stroke, :line_width
+      def_delegators :@pdf, :circle, :rectangle, :stroke_color, :line, :stroke, :line_width
+      def_delegators :@pdf, :stroke_horizontal_line, :stroke_vertical_line
       def_delegators :@pdf, :fill_ellipse, :curve
 
       #
@@ -48,7 +49,9 @@ module Prawn
         opts    = defaults.merge(opts)
         @config = OpenStruct.new defaults.merge(opts)
         @config.each_pair.each do |key, val|
-          define_singleton_method key.to_s, &@config.method(key)
+          unless respond_to? key
+            define_singleton_method key.to_s, &@config.method(key)
+          end
         end
 
       end
@@ -66,6 +69,7 @@ module Prawn
           width:   bounds.width,
           height:  bounds.height,
           percentage: false,
+          value_labels: [],
           x:  { display: false },
           y:  { display: false },
           y1: { display: false },
@@ -101,23 +105,6 @@ module Prawn
       end
 
       def draw
-        with_color do
-          bounding_box at, width: width, height: height do
-
-            with_larger_font { draw_title } if config[:title].present?
-            draw_legend if config[:legend].present?
-
-            bounding_box(chart_at, width: chart_width, height: chart_height) do
-
-              draw_x_axis  if x[:display]
-              draw_y_axis  if y[:display]
-              draw_y1_axis if y1[:display]
-
-              plot_values
-            end
-
-          end
-        end
       end
 
       def padding_top_bottom
@@ -125,11 +112,11 @@ module Prawn
       end
 
       def padding_left_right
-        padding[:left] + padding[:right] + y_axis_width - 10
+        padding[:left] + padding[:right] + y_axis_width + 10
       end
 
       def chart_at
-        [ bounds.left + (padding_left_right / 2), bounds.top - (padding_top_bottom / 2) ]
+        [ padding[:left] + y_axis_width, bounds.top - (padding_top_bottom / 2) ]
       end
 
       def chart_width
@@ -167,33 +154,6 @@ module Prawn
         Prawn::Charts::Legend.new(pdf, opts).draw
       end
 
-      def x_axis_height
-        @x_axis_height ||= series.map do |s|
-          s[:values].map{ |v| height_of(key_formatter.call(v[:key]))}.max
-        end.max
-      end
-
-      def draw_x_axis
-
-        opts = {
-          series:  series,
-          at:      [0,0],
-          width:   bounds.width,
-          height:  x_axis_height,
-          points:  x_points,
-          formatter: key_formatter
-        }
-
-        Prawn::Charts::XAxis.new(pdf, opts).draw
-
-        with_smaller_font do
-          opts ={ width: bounds.width, height: height_of(x[:title]) }
-          bounding_box( [bounds.left, (-x_axis_height - height_of(x[:title]) / 2)], opts ) do
-            text x[:title], align: :center
-          end
-        end
-      end
-
       def title_height
         val = 0
         with_larger_font do
@@ -202,75 +162,13 @@ module Prawn
         val
       end
 
-      def y_axis_width
-        if percentage || only_zero?
-          vals = [ { values: [
-            { value: 0 },
-            { value: 25 },
-            { value: 50 },
-            { value: 75 },
-            { value: 100 }
-          ] } ]
-        else
-          vals = series
-        end
-        @y_axis_width ||= begin
-                            txt = vals.map do |s|
-                              s[:values].map do |v|
-                                width_of(value_formatter.call(v[:value]))
-                              end.max
-                            end.max
-
-                            txt = width_of('100%') if percentage
-                            txt
-                          end
-      end
-
-      def draw_y_axis
-
-        opts = {
-          at:         [-y_axis_width, bounds.height],
-          width:      y_axis_width,
-          height:     bounds.height,
-          points:     [min_value, max_value],
-          formatter:  value_formatter,
-          percentage: percentage,
-          only_zero: only_zero?
-        }
-
-        Prawn::Charts::YAxis.new(pdf, opts).draw
-
-        with_smaller_font do
-          mid = (bounds.height - width_of(y[:title])) / 2
-          draw_text y[:title], { at: [(-y_axis_width - 1), mid ], rotate: 90 }
-        end
-
-      end
-
-      def draw_y1_axis
-        opts = {
-          at:         [bounds.right, bounds.height],
-          width:      y_axis_width,
-          height:     bounds.height,
-          points:     [min_value, max_value],
-          formatter:  value_formatter,
-          only_zero: only_zero?
-        }
-
-        Prawn::Charts::YAxis.new(pdf, opts).draw
-
-        with_smaller_font do
-          mid = bounds.height - width_of(y1[:title])
-          draw_text y[:title], { at: [bounds.right + y_axis_width + 1, mid ], rotate: 270 }
-        end
-
-      end
-
-
       def plot_values
       end
 
       def x_points
+      end
+
+      def y_points
       end
 
       def values
@@ -289,45 +187,48 @@ module Prawn
         end
       end
 
+      def present_values
+        values.compact
+      end
+
       def max_value
+        return 100 if percentage
+        return value_labels[-1][0] if value_labels && value_labels.count > 0
         increment = exp(step_value) * 2
-        mvalue = values.max
+        mvalue = present_values.max
         mvalue + increment
       end
 
       def step_value
-        n = (values.min - delta_value * 0.1).to_i
+        n = (present_values.min - delta_value * 0.1).to_i
         n - (n % exp(n)) - exp(n)
       end
 
       def min_value
         # Original code, probably needs config to enable
-        # n = (values.min - delta_value * 0.1).to_i
+        # n = (present_values.min - delta_value * 0.1).to_i
         # n - (n % exp(n)) - exp(n)
         0
       end
 
       def delta_value
-        values.max - values.min
+        present_values.max - present_values.min
       end
 
-      def series_height
+      def series_span
         max_value - min_value
       end
 
-      def stacked_bar_values
-        keys.map do |key|
-          items = for_key(key)
-          {
-            key:     key,
-            values:  items,
-            total:   items.inject(0){ |s,v| s + v[:value] }
-          }
-        end
+      def series_length
+        series.map { |v| v[:values].length }.max * series.count
       end
 
       def only_zero?
-        @zero ||= values.all?(&:zero?)
+        @zero ||= present_values.all?(&:zero?)
+      end
+
+      def percentage_list
+        [0, 25, 50, 75, 100].zip([0, 25, 50, 75, 100])
       end
 
       def for_key key
@@ -340,6 +241,61 @@ module Prawn
         end
       end
 
+      def max_label_width
+        if x_orientation == :values
+          if axis_value_labels[0][1].is_a? String
+            width / (axis_value_labels[-1][0].to_f) + 5
+          else
+            width / (axis_value_labels.count - 1.0) + 5
+          end
+        else
+          ratio * full_label_width
+        end
+      end
+
+      def full_label_width
+        bounds.width / series_length.to_f
+      end
+
+      def axis_value_labels(zero_base = true)
+        return percentage_list if percentage || only_zero?
+        return @config.value_labels if @config.value_labels
+        @value_labels ||= begin
+          labels = []
+
+          max_point_value = value_points.max.to_f
+          min_point_value = value_points.min.to_f
+
+          min_val = exp(max_point_value / 4)
+          first_value =
+            if zero_base || min_point_value.zero?
+              0.0
+            else
+              min_point_value - (min_point_value % min_val) - min_val
+            end
+          labels.push(first_value)
+
+          point_range = max_point_value.to_i - min_point_value.to_i
+          stride = point_range/6.0
+          n = min_point_value
+
+          while n < max_point_value
+            val = n == 0 ? 1 : n
+            result = val - (val % min_val) - min_val
+            if result > min_point_value
+              labels.push(result)
+            end
+            n += stride
+          end
+
+          val = max_point_value.to_f
+          result = val - (val % min_val) - min_val
+          labels.push(result)
+          labels.uniq!
+
+          labels.zip(labels)
+        end
+      end
     end
   end
 end
