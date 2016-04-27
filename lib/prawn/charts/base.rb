@@ -219,8 +219,12 @@ module Prawn
         max_value - min_value
       end
 
+      def max_value_length
+        series.map { |v| v[:values].length }.max
+      end
+
       def series_length
-        series.map { |v| v[:values].length }.max * series.count
+        max_value_length * series.count
       end
 
       def only_zero?
@@ -254,7 +258,7 @@ module Prawn
       end
 
       def full_label_width
-        bounds.width / series_length.to_f
+        bounds.width / max_value_length.to_f
       end
 
       def axis_value_labels(zero_base = true)
