@@ -122,6 +122,10 @@ module Prawn
 
             if percentage
               width_of('100%')
+            elsif axis_value_labels && axis_value_labels.count > 0
+              axis_value_labels.map do |_val, item|
+                width_of(item)
+              end.max
             else
               vals.map do |s|
                 s[:values].map do |v|
