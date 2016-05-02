@@ -41,7 +41,7 @@ module Prawn
       end
 
       def first_x_point index
-        (bar_width * index) + (bar_space * (index + 1))
+        (bar_width * index) + series_space + (bar_padding * ((2 * index) + 1))
       end
 
       def additional_points
@@ -77,6 +77,14 @@ module Prawn
 
       def bar_space
         @bar_space ||= (bounds.width * (1.0 - ratio)) / (series_length + 1).to_f
+      end
+
+      def series_space
+        (bar_space * ratio)
+      end
+
+      def bar_padding
+        (bar_space - series_space) / [series.count - 1, 1].max
       end
 
       def value_height val

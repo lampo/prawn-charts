@@ -253,7 +253,7 @@ module Prawn
             width / (axis_value_labels.count - 1.0) + 5
           end
         else
-          ratio * full_label_width
+          ratio * full_label_width + 10
         end
       end
 
